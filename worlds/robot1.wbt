@@ -1,14 +1,37 @@
 #VRML_SIM R2019a utf8
 WorldInfo {
-  info [
-  ]
 }
 Viewpoint {
-  orientation -0.7 0.7 0.2 0.75
-  position 1.2 1.6 2.3
-
+  orientation -0.5878921294005831 0.8018990769828486 0.10649279094334675 0.37708639429666463
+  position 0.2588286130702088 0.3793757617219668 1.1093926952254307
 }
 TexturedBackground {
 }
 TexturedBackgroundLight {
+}
+Floor {
+}
+Robot {
+  children [
+    DEF G_BOX&WHEELS Group {
+      children [
+        Solid {
+          translation 0 0.1 0
+          children [
+            Shape {
+              appearance PBRAppearance {
+                baseColor 0.12774853131914243 0.9997558556496529 0.9990386816205081
+              }
+              geometry DEF G_BOX Box {
+                size 0.1 0.07 0.25
+              }
+            }
+          ]
+          boundingObject USE G_BOX
+          physics Physics {
+          }
+        }
+      ]
+    }
+  ]
 }
