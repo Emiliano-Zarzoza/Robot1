@@ -2,8 +2,8 @@
 WorldInfo {
 }
 Viewpoint {
-  orientation 0.00018680816011994498 0.9884350289581103 0.15164484373459858 3.103858304028318
-  position 0.054455926845131924 0.20416245532457367 -0.8080690972523658
+  orientation 0.3486638467664331 -0.8770218414091893 -0.3305544004385181 4.653165736285463
+  position 0.5432616635976439 0.6797376772154516 -0.06307694420927593
 }
 TexturedBackground {
 }
@@ -12,84 +12,49 @@ TexturedBackgroundLight {
 Floor {
 }
 Robot {
+  translation 0 0.2 0
   children [
-    DEF G_BOX&WHEELS Group {
-      children [
-        DEF G_BOX Solid {
-          translation 0 0.064 0
-          children [
-            Shape {
-              appearance PBRAppearance {
-                baseColor 0.12774853131914243 0.9997558556496529 0.9990386816205081
-              }
-              geometry DEF G_BOX Box {
-                size 0.1 0.07 0.25
-              }
-            }
-          ]
-          boundingObject USE G_BOX
-          physics Physics {
-          }
-        }
-        DEF H_WHEELS HingeJoint {
-          jointParameters HingeJointParameters {
-            anchor 0.125 0 0
-          }
-          endPoint Solid {
-            translation 0.06 0.075 0.04999999999999999
-            rotation 0 0 1 1.570799693899574
-            children [
-              Shape {
-                appearance DEF C_WHEEL PBRAppearance {
-                  baseColor 0.9862516212710766 0.007125963225757229 0.027435721370260166
-                }
-                geometry DEF G_WHEELS Cylinder {
-                  height 0.02
-                  radius 0.075
-                }
-              }
-              HingeJoint {
-                jointParameters HingeJointParameters {
-                }
-                endPoint Solid {
-                  translation 0 0.11971935288903446 0.008202227979691072
-                  rotation 1 0 0 0.06840523518216715
-                  children [
-                    Shape {
-                      appearance USE C_WHEEL
-                      geometry USE G_WHEELS
-                    }
-                  ]
-                  boundingObject USE G_WHEELS
-                  physics Physics {
-                  }
-                }
-              }
-            ]
-            name "solid(1)"
-            boundingObject USE G_WHEELS
-            physics Physics {
-            }
-          }
-        }
-        DEF G_SPHERE Solid {
-          translation 0 0.015 -0.11
-          children [
-            Shape {
-              appearance DEF C_CRAZYWHEEL PBRAppearance {
-                baseColor 0.9889829861905852 0.3968413824673838 0.09019607843137255
-              }
-              geometry DEF G_CRAZYWHEEL Sphere {
-                radius 0.015
-              }
-            }
-          ]
-          name "solid(2)"
-          boundingObject USE G_CRAZYWHEEL
-          physics Physics {
-          }
+    DEF ROBOT_BODY Shape {
+      appearance PBRAppearance {
+        baseColor 0.9869535362783246 0.1892576485847257 0.11616693369954986
+      }
+      geometry DEF G_BODY Box {
+        size 0.25 0.07 0.1
+      }
+    }
+    DEF WHEEL1_JOINT HingeJoint {
+      jointParameters HingeJointParameters {
+        axis 0 0 1
+        anchor -0.05 0 0.06
+      }
+      device [
+        RotationalMotor {
+          name "motor_right"
         }
       ]
+      endPoint DEF WHEEL1 Solid {
+        translation -0.05 0 0.06
+        rotation -1 0 0 1.5707996938995745
+        children [
+          Shape {
+            appearance DEF C_WHEEL PBRAppearance {
+              baseColor 0 0 0
+              roughness 1
+              metalness 0
+            }
+            geometry DEF G_WHEEL Cylinder {
+              height 0.02
+              radius 0.075
+            }
+          }
+        ]
+        boundingObject USE G_WHEEL
+        physics Physics {
+        }
+      }
     }
   ]
+  boundingObject USE G_BODY
+  physics Physics {
+  }
 }
