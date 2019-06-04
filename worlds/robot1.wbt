@@ -2,8 +2,8 @@
 WorldInfo {
 }
 Viewpoint {
-  orientation 0.3486638467664331 -0.8770218414091893 -0.3305544004385181 4.653165736285463
-  position 0.5432616635976439 0.6797376772154516 -0.06307694420927593
+  orientation -0.008886335012705384 -0.9859294637305479 0.16692550912918078 3.2100122926363257
+  position 0.05859114622044087 0.016089245817784474 -0.3215782952199187
 }
 TexturedBackground {
 }
@@ -12,15 +12,34 @@ TexturedBackgroundLight {
 Floor {
 }
 Robot {
-  translation 0 0.2 0
+  translation 0 0.075 0
   children [
-    DEF ROBOT_BODY Shape {
-      appearance PBRAppearance {
-        baseColor 0.9869535362783246 0.1892576485847257 0.11616693369954986
-      }
-      geometry DEF G_BODY Box {
-        size 0.25 0.07 0.1
-      }
+    DEF GR_BODY Group {
+      children [
+        DEF ROBOT_BODY Shape {
+          appearance PBRAppearance {
+            baseColor 0.9869535362783246 0.1892576485847257 0.11616693369954986
+          }
+          geometry DEF G_BODY Box {
+            size 0.25 0.07 0.1
+          }
+        }
+        DEF CRAZY_WHEEL Transform {
+          translation 0.11 -0.05 0
+          children [
+            Shape {
+              appearance PBRAppearance {
+                baseColor 0.05510032806897078 0 0.9981994354161898
+                roughness 1
+                metalness 0
+              }
+              geometry DEF G_CRAZYWHEEL Sphere {
+                radius 0.015
+              }
+            }
+          ]
+        }
+      ]
     }
     DEF WHEEL1_JOINT HingeJoint {
       jointParameters HingeJointParameters {
@@ -34,9 +53,9 @@ Robot {
       ]
       endPoint DEF WHEEL1 Solid {
         translation -0.05 0 0.06
-        rotation -1 0 0 1.5707996938995745
+        rotation -1 0 0 1.570799693899574
         children [
-          Shape {
+          DEF SH_WHEEL Shape {
             appearance DEF C_WHEEL PBRAppearance {
               baseColor 0 0 0
               roughness 1
@@ -53,8 +72,34 @@ Robot {
         }
       }
     }
+    DEF WHEEL2_JOINT HingeJoint {
+      jointParameters HingeJointParameters {
+        axis 0 0 1
+        anchor -0.05 0 -0.06
+      }
+      device [
+        RotationalMotor {
+          name "motor_left"
+        }
+      ]
+      endPoint Solid {
+        translation -0.05 0 -0.06
+        rotation -1 0 0 1.5708003061004252
+        children [
+          Shape {
+            appearance USE C_WHEEL
+            geometry USE G_WHEEL
+          }
+        ]
+        name "solid(1)"
+        boundingObject USE G_WHEEL
+        physics Physics {
+        }
+      }
+    }
   ]
-  boundingObject USE G_BODY
+  boundingObject USE GR_BODY
   physics Physics {
   }
+  controller "robot1"
 }
