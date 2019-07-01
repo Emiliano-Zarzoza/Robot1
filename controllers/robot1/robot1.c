@@ -12,57 +12,75 @@
  */
 #include <webots/robot.h>
 #include <webots/motor.h>
-#include <webots/keyboard.h>
+#include <webots/position_sensor.h>
 #include <webots/distance_sensor.h>
 
 #include <stdio.h>
 #include <math.h>
-/*
-enum {
- WB_KEYBOARD_END,
- WB_KEYBOARD_HOME,
- WB_KEYBOARD_LEFT,
- WB_KEYBOARD_UP,
- WB_KEYBOARD_RIGHT,
- WB_KEYBOARD_DOWN,
- WB_KEYBOARD_PAGEUP,
- WB_KEYBOARD_PAGEDOWN,
- WB_KEYBOARD_NUMPAD_HOME,
- WB_KEYBOARD_WB_KEYBOARD_PAGEDOWN,
- WB_KEYBOARD_NUMPAD_UP,
- WB_KEYBOARD_NUMPAD_RIGHT,
- WB_KEYBOARD_NUMPAD_DOWN,
- WB_KEYBOARD_NUMPAD_END,
- WB_KEYBOARD_KEY,
- WB_KEYBOARD_SHIFT,
- WB_KEYBOARD_CONTROL,
- WB_KEYBOARD_ALT
-};
- */
 
 /*
  * You may want to add macros here.
  */
 #define TIME_STEP 64
+#define PI 3.14159
+#define OBSTACLE_DISTANCE 33.18
+
+
+enum {
+  GO,
+  TURN,
+  FREEWAY,
+  OBSTACLE
+  };
+
+  //Global variables
+
+  double initial_angle_wheel1;
 
 /*
- * This is the main program.
- * The arguments of the main function can be specified by the
- * "controllerArgs" field of the Robot node
+ * Functions
  */
+
+ 		 void goRobot (WbDeviceTag *wheels, float velocity) {
+ 			 wb_motor_set_velocity(wheels[0], velocity);
+ 			 wb_motor_set_velocity(wheels[1], velocity);
+ 		 }
+
+ 		 void stopRobot (WbDeviceTag *wheels, float noVel) {
+ 			 wb_motor_set_velocity(wheels[0], noVel);
+ 			 wb_motor_set_velocity(wheels[1], noVel);
+ 		 }
+
+ 		 int checkForObstacles (WbDeviceTag dist_sensor) {
+       double distance = wb_distance_sensor_get_value(dist_sensor);
+
+       if (distance > OBSTACLE_DISTANCE)
+ 				 return FREEWAY;
+ 				else
+ 				 return OBSTACLE;
+ 		 }
+
+ 		 void turn90right (WbDeviceTag *wheels, float velocity) {
+ 			 wb_motor_set_velocity(wheels[0], velocity);
+ 			 wb_motor_set_velocity(wheels[1], -velocity);
+ 		 }
+
+     double getAngleRobot(WbDeviceTag encoder1) {
+       printf("Angle\n");
+       double angle, angle_wheel1;
+
+       angle_wheel1 = wb_position_sensor_get_value(encoder1);
+       printf("Angle wheel1: %lf\n", angle_wheel1);
+       angle = fabs(angle_wheel1 - initial_angle_wheel1);
+       printf("Angle: %lf\n", angle);
+
+       return angle;
+     }
+
 int main(int argc, char **argv)
 {
   /* necessary to initialize webots stuff */
   wb_robot_init();
-  wb_keyboard_enable(TIME_STEP); //sample period for the keyboard, the same as
-                                // TIME_STEP, to use our real keyboard on wb
-  int pressed_key;
-  int MinRange = 2;
-  float m_step;
-  int MaxRange = 10000;
-  int bits = 1024;
-  float dist_cm;
-
 
   /*
    * You should declare here WbDeviceTag variables for storing
@@ -71,85 +89,57 @@ int main(int argc, char **argv)
    *  WbDeviceTag my_actuator = wb_robot_get_device("my_actuator");
    */
    // Motor devices
-   WbDeviceTag wheel_right = wb_robot_get_device("motor_right");
-   WbDeviceTag wheel_left = wb_robot_get_device("motor_left");
+	 WbDeviceTag wheels[2];
+   wheels[0] = wb_robot_get_device("motor_right");
+   wheels[1] = wb_robot_get_device("motor_left");
 
-   wb_motor_set_position (wheel_right, INFINITY);
-   wb_motor_set_position (wheel_left, INFINITY);
+   wb_motor_set_position (wheels[0], INFINITY);
+   wb_motor_set_position (wheels[1], INFINITY);
+
+   // Encoder devices
+   WbDeviceTag encoder_right = wb_robot_get_device("encoder1");
+   wb_position_sensor_enable(encoder_right, TIME_STEP);
+   WbDeviceTag encoder_left = wb_robot_get_device("encoder2");
+   wb_position_sensor_enable(encoder_left, TIME_STEP);
 
    // Distance sensor devices
    WbDeviceTag dist_sensor  = wb_robot_get_device("distance_sensor");
 
    wb_distance_sensor_enable (dist_sensor, TIME_STEP);
 
-   double ds_value;
-
-   //double ds_value;
+   //variables
+   float velocity = -6.333;
+   float noVel = 0;
+   float angle;
+   int ds_state, robot_state = GO;
 
   /* main loop
    * Perform simulation steps of TIME_STEP milliseconds
    * and leave the loop when the simulation is over
    */
   while (wb_robot_step(TIME_STEP) != -1) {
+    if (robot_state == GO) {
+      ds_state = checkForObstacles(dist_sensor);
 
-    /*
-     * Read the sensors :
-     * Enter here functions to read sensor data, like:
-     *  double val = wb_distance_sensor_get_value(my_sensor);
-     */
-     pressed_key= wb_keyboard_get_key();
+      if (ds_state == FREEWAY) {
+        goRobot(wheels, velocity);
+        angle = wb_position_sensor_get_value(encoder_right);
+        printf("Angle: %lf\n", angle);
+      } else if (ds_state == OBSTACLE) {
+        robot_state = TURN;
+        stopRobot(wheels, noVel);
+        initial_angle_wheel1 = wb_position_sensor_get_value(encoder_right);
+      }
+    } else if (robot_state == TURN) {
+      turn90right(wheels, velocity);
+      angle = getAngleRobot(encoder_right);
 
-
-     ds_value = wb_distance_sensor_get_value (dist_sensor);
-     m_step = (MaxRange - MinRange) / (bits - 1);
-     dist_cm = MinRange + (ds_value * m_step);
-
-     printf ("Distance sensor: %lf\n", ds_value);
-
-
-    /* Process sensor data here */
-
-    /*
-     * Enter here functions to send actuator commands, like:
-     * wb_differential_wheels_set_speed(100.0,100.0);
-     */
-
-     if (pressed_key == WB_KEYBOARD_UP)
-     {
-       wb_motor_set_velocity (wheel_right, -52.41);
-       wb_motor_set_velocity (wheel_left, -52.41);
-       printf ("UP key pressed!\n");
-
-     }
-
-     else if (pressed_key == WB_KEYBOARD_DOWN)
-     {
-       wb_motor_set_velocity (wheel_right, 10.4720);
-       wb_motor_set_velocity (wheel_left, 10.4720);
-       printf ("DOWN key pressed!\n");
-     }
-
-     else if (pressed_key == WB_KEYBOARD_RIGHT)
-     {
-       wb_motor_set_velocity(wheel_right, 6.28);
-       wb_motor_set_velocity(wheel_left, -6.28);
-       printf ("RIGHT key pressed!\n");
-     }
-
-     else if (pressed_key == WB_KEYBOARD_LEFT)
-     {
-       wb_motor_set_velocity(wheel_right, -6.28);
-       wb_motor_set_velocity(wheel_left, 6.28);
-       printf ("LEFT key pressed!\n");
-     }
-
-     else
-     {
-       wb_motor_set_velocity (wheel_right, 0);
-       wb_motor_set_velocity (wheel_left, 0);
-     }
-
-  };
+      if (angle >= 0.4*PI) {
+        robot_state = GO;
+        stopRobot(wheels, noVel);
+      }
+    }
+	}
 
   /* Enter your cleanup code here */
 

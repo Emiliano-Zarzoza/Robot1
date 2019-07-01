@@ -1,9 +1,9 @@
-#VRML_SIM R2019a utf8
+#VRML_SIM R2019b utf8
 WorldInfo {
 }
 Viewpoint {
-  orientation -0.042457581086032266 -0.9835990690066422 -0.175300385788479 2.372111635403888
-  position -0.8686849993306458 0.5663955258627072 -1.138311158944146
+  orientation 0.02373560430357481 -0.9983765475527163 -0.05177731535202457 3.0864803075402065
+  position 0.6209813765685981 0.25811141014719935 -1.7596214118668476
 }
 TexturedBackground {
 }
@@ -49,12 +49,12 @@ Robot {
       device [
         PositionSensor {
           name "encoder1"
-          resolution 1
+          resolution 0.00524
         }
         RotationalMotor {
           name "motor_right"
           maxVelocity 60
-          maxTorque 0.0078
+          maxTorque 0.59
         }
       ]
       endPoint DEF WHEEL1 Solid {
@@ -84,10 +84,14 @@ Robot {
         anchor -0.05 0 -0.06
       }
       device [
+        PositionSensor {
+          name "encoder2"
+          resolution 0.00524
+        }
         RotationalMotor {
           name "motor_left"
           maxVelocity 60
-          maxTorque 0.0078
+          maxTorque 0.59
         }
       ]
       endPoint Solid {
@@ -121,18 +125,19 @@ Robot {
       lookupTable [
         0 0 0
         0.02 0 0
-        11 1023 0
+        5 1659 0
       ]
       resolution 1
     }
   ]
   boundingObject USE GR_BODY
   physics Physics {
+    mass 1.5
   }
   controller "robot1"
 }
 Solid {
-  translation 0.5700000000000001 0.05 0
+  translation 1.05 0.049999999999999996 0
   children [
     Shape {
       appearance PBRAppearance {
@@ -143,5 +148,20 @@ Solid {
       }
     }
   ]
+  boundingObject USE G_OBSTACLE
+}
+Solid {
+  translation 0.8999999999999999 0.049999999999999996 0.15
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0.20143434805828947 1 0.857145037003128
+      }
+      geometry DEF G_OBSTACLE Box {
+        size 0.2 0.07 0.01
+      }
+    }
+  ]
+  name "solid(1)"
   boundingObject USE G_OBSTACLE
 }
